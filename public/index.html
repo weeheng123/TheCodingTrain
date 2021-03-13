@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+      <meta
+      http-equiv="X-UA-Compatible"
+      content="ie=edge"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.3.0/lib/p5.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Data Selfie App</h1>
+    <a href="/all.html">Other Page</a>
+    <p>
+      Latitude: <span id="latitude"></span>&deg;<br />
+      Longitude: <span id="longitude"></span>&deg;
+    </p>
+    <button id="submit">Submit</button>
+    <script>
+      function setup() {
+        noCanvas();
+        const video = createCapture(VIDEO);
+        video.size(320, 240);
+        let lat, long;
+        if ("geolocation" in navigator) {
+          console.log("geolocation available");
+          navigator.geolocation.getCurrentPosition(async function (position) {
+            lat = position.coords.latitude;
+            long = position.coords.longitude;
+
+            document.getElementById("latitude").textContent = lat;
+            document.getElementById("longitude").textContent = long;
+            console.log(position);
+          });
+        } else {
+          console.log("geolocation not available");
+        }
+        const button = document.getElementById("submit");
+        button.addEventListener("click", async (event) => {
+          video.loadPixels();
+          const image64 = video.canvas.toDataURL();
+          const data = { lat, long, image64 };
+          const options = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          };
+          const response = await fetch("/api", options);
+          const json = await response.json();
+          console.log(json);
+        });
+      }
+    </script>
+  </body>
+</html>
